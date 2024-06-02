@@ -13,7 +13,6 @@ WORKDIR /app
 
 COPY --from=builder /app/venv /app/venv
 COPY . .
-COPY .env .pylintrc /app/
 
 ENV DATABASE_HOST=db
 ENV DATABASE_USER=root
