@@ -1,0 +1,46 @@
+name: CI Pipeline
+
+on:
+  push:
+    paths:
+      - 'milestone-4/**'
+  pull_request:
+    paths:
+      - 'milestone-4/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # - name: Set up Python
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: '3.9.6'
+        
+      - name: Install dependencies
+        run: |
+          cd milestone-4
+          make install
+
+      - name: Lint code
+        run: |
+          cd milestone-4
+          make lint
+
+      - name: Docker login
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Docker image
+        run: |
+          cd milestone-4
+          make build_image
+
+      - name: Push Docker image
+        run: |
+          cd milestone-4
+          make push_image
