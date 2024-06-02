@@ -21,24 +21,26 @@ jobs:
       #   uses: actions/setup-python@v4
       #   with:
       #     python-version: '3.9'
-      
-      - name: Checking the PWD
-        run: echo "${{ github.workspace }}"
-        
-      - name: Change to milestone-4 directory
-        run: cd milestone-4
         
       - name: Install dependencies
-        run: make install
+        run: |
+          cd milestone-4
+          make install
 
       - name: Lint code
-        run: make lint
+        run: |
+          cd milestone-4
+          make lint
 
       - name: Docker login
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Build Docker image
-        run: make build_image
+        run: |
+          cd milestone-4
+          make build_image
 
       - name: Push Docker image
-        run: make push_image
+        run: |
+          cd milestone-4
+          make push_image
