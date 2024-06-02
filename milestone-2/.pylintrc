@@ -1,0 +1,2 @@
+[MASTER]
+disable = missing-module-docstring,missing-function-docstring,logging-fstring-interpolation,f-string-without-interpolation,broad-exception-caught
