@@ -23,8 +23,8 @@ jobs:
       #     python-version: '3.9'
 
       - name: Change to milestone-4 directory
-        run: cd milestone-4
-        working-directory: milestone-4
+        run: cd ${{ github.workspace }}/milestone-4
+        working-directory: ${{ github.workspace }}/milestone-4
       
       - name: Checking the PWD
         run: echo "${{ github.workspace }}"
