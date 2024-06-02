@@ -11,7 +11,7 @@ To Run this Code on you local you need below things:
 * postman
 * make
 
-### How to start the docker containers
+### How to start the docker container
 
 To start the docker container we have run some make targets which will start our api and db containers.
 
