@@ -21,13 +21,12 @@ jobs:
       #   uses: actions/setup-python@v4
       #   with:
       #     python-version: '3.9'
-
-      - name: Change to milestone-4 directory
-        run: cd ${{ github.workspace }}/milestone-4
-        working-directory: ${{ github.workspace }}/milestone-4
       
       - name: Checking the PWD
         run: echo "${{ github.workspace }}"
+        
+      - name: Change to milestone-4 directory
+        run: cd milestone-4
         
       - name: Install dependencies
         run: make install
