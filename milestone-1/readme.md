@@ -10,6 +10,7 @@ To Run this Code on you local you need below things:
 * python & pip >= 3.6
 * mysql 5.x
 * postman
+* make
 
 ### How to run code locally 
 
