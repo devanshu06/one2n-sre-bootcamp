@@ -1,0 +1,32 @@
+#Node-A
+apiVersion: v1
+kind: Node
+metadata:
+  name: on2n-sre-bootcamp
+spec:
+  taints:
+    - key: type
+      value: application
+      effect: NoSchedule
+---
+#Node-B
+apiVersion: v1
+kind: Node
+metadata:
+  name: on2n-sre-bootcamp-m02
+spec:
+  taints:
+    - key: type
+      value: dependent_services
+      effect: NoSchedule
+---
+#Node-C
+apiVersion: v1
+kind: Node
+metadata:
+  name: on2n-sre-bootcamp-m03
+spec:
+  taints:
+    - key: type
+      value: observability
+      effect: NoSchedule
