@@ -21,6 +21,7 @@ logging.info(f"DB User: {DATABASE_USER}")
 # logging.info(f"DB Password: {DATABASE_PASSWORD}")
 logging.info(f"DB Name: {DATABASE_NAME}")
 
+
 def initialize_database():
     connection = None
     cursor = None
@@ -43,6 +44,7 @@ def initialize_database():
         if connection:
             connection.close()
 
+
 def get_db_connection():
     try:
         initialize_database()
@@ -57,9 +59,11 @@ def get_db_connection():
         logging.error(f"Error connecting to database: {str(e)}")
         return None
 
+
 @app.route('/healthcheck', methods=['GET'])
 def healthcheck():
     return {'status': 'OK'}, 200
+
 
 @app.post('/api/v1/addstudent')
 def addstudent():
@@ -86,6 +90,7 @@ def addstudent():
         if connection:
             connection.close()
 
+
 @app.delete('/api/v1/deletestudent/<int:num>')
 def deletestudent(num):
     connection = get_db_connection()
@@ -109,6 +114,7 @@ def deletestudent(num):
         if connection:
             connection.close()
 
+
 @app.get('/api/v1/allstudent')
 def allstudent():
     connection = get_db_connection()
@@ -128,6 +134,7 @@ def allstudent():
             cursor.close()
         if connection:
             connection.close()
+
 
 @app.get('/api/v1/student/<int:num>')
 def studentbyid(num):
@@ -149,6 +156,7 @@ def studentbyid(num):
             cursor.close()
         if connection:
             connection.close()
+
 
 @app.put('/api/v1/updatestudent/<int:num>')
 def updatestudentbyid(num):
@@ -179,6 +187,7 @@ def updatestudentbyid(num):
             cursor.close()
         if connection:
             connection.close()
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port="5000", debug=True)
