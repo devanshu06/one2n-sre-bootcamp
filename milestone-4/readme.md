@@ -12,7 +12,7 @@ You should Have self-hosted runner configured on you github repository and below
 * make
 * configure secrets on github repos with **DOCKER_USERNAME** & **DOCKER_PASSWORD**
 
-### 
+### Where to find the CI file
 
 You can find the **ci.yml** file at the this path ```.github/workflows/ci.yml``` 
 
