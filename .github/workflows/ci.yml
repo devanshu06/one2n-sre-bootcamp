@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hoster-sre-bootcamp-runner
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
