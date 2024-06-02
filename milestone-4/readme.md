@@ -1,30 +1,20 @@
 
 # One2n-Assignment
-This folder conatins the solution for the bootcamp milestone-3. 
+This folder conatins the solution for the bootcamp milestone-4. 
 
 ### Problem Statement:
-Link for PS: https://one2n.notion.site/3-Setup-one-click-local-development-setup-9dae469099b845938841144bf5f850ab
+Link for PS: https://one2n.notion.site/4-Setup-a-CI-pipeline-fa7870cace6640fcb576e33958c55525
 
 ### Pre-Requisites:
-To Run this Code on you local you need below things:
+You should Have self-hosted runner configured on you github repository and below requirments to be installed on your local
 * docker & docker-compose 
-* postman
+* python 3.6 or above
 * make
+* configure secrets on github repos with **DOCKER_USERNAME** & **DOCKER_PASSWORD**
 
-### How to start the docker containers
+### 
 
-To start the docker container we have run some make targets which will start our api and db containers.
-
-
-```bash
-# To start the docker container up and create a new build for the api containers
-make up
-
-# To stop the docker containers 
-make down
-
-```
-
+You can find the **ci.yml** file at the this path ```.github/workflows/ci.yml``` 
 
 
 
