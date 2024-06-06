@@ -1,19 +1,10 @@
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: student-api
-  labels:
-    name: student-api
----
-apiVersion: v1
 kind: ConfigMap
 metadata:
   name: api-server-config
   namespace: student-api
 data:
   DATABASE_HOST: db
-  DATABASE_USER: root
-  DATABASE_PASSWORD: password
   DATABASE_NAME: studentdb
 ---
 apiVersion: apps/v1
@@ -47,14 +38,14 @@ spec:
               key: DATABASE_HOST
         - name: DATABASE_USER
           valueFrom:
-            configMapKeyRef:
-              name: api-server-config
-              key: DATABASE_USER
+            secretKeyRef:
+              name: databse-creds
+              key: username
         - name: DATABASE_PASSWORD
           valueFrom:
-            configMapKeyRef:
-              name: api-server-config
-              key: DATABASE_PASSWORD
+            secretKeyRef:
+              name: databse-creds
+              key: password
         - name: DATABASE_NAME
           valueFrom:
             configMapKeyRef:

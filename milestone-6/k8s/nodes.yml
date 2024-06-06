@@ -7,7 +7,7 @@ spec:
   taints:
     - key: type
       value: application
-      effect: NoSchedule
+      effect: PreferNoSchedule
 ---
 #Node-B
 apiVersion: v1
@@ -18,7 +18,7 @@ spec:
   taints:
     - key: type
       value: dependent_services
-      effect: NoSchedule
+      effect: PreferNoSchedule
 ---
 #Node-C
 apiVersion: v1
@@ -29,4 +29,4 @@ spec:
   taints:
     - key: type
       value: observability
-      effect: NoSchedule
+      effect: PreferNoSchedule

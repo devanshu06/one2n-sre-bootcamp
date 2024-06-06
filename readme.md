@@ -5,4 +5,4 @@ Welcome to the One2N SRE Bootcamp repository! This repository contains solutions
 
 # Progress update:
 
-I am currently working on the milestone-7. Will update the status here .
+Milestone-7 is completed. I am currently working on the milestone-8. Will update the status here.

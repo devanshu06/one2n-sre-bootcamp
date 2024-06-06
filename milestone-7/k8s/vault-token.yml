@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-token
+  namespace: student-api
+type: Opaque
+data:
+  token: aHZzLmR0YVRFMDF3VG5FUkRnNUt2M2xLRm5BaQ==
