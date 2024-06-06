@@ -75,6 +75,7 @@ vault token create -policy="external-secret-operator-policy"
 # After performing the above steps your vault should be up and running with the secrets stored in it.
 
 # Provisioning of External Secrets Operator(ESO):
+# Refer to this link if you face any problem in setting up ESO I have taken reference from here: https://earthly.dev/blog/eso-with-hashicorp-vault/
 
 helm repo add external-secrets https://charts.external-secrets.io
 helm repo update
