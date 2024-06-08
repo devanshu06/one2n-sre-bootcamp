@@ -56,10 +56,10 @@ kubectl port-forward svc/prometheus-service -n monitoring-ns 9090:9090
 ## Screenshots of Grafana and prometheus to show the working of the code
 
 1 - Datasource in the grafana for Loki and prometheus 
-![plot](./milestone-10/screenshots/Grafana-Datasource.png)
+![plot](milestone-10/screenshots/Grafana-Datasource.png)
 
 2 - Logs of application in the grafana using the Loki 
-![plot](./milestone-10/screenshots/Grafana-Loki.png)
+![plot](milestone-10/screenshots/Grafana-Loki.png)
 
 3 - Prometheus Targets
-![plot](./milestone-10/screenshots/Prometheus-target.png)  
+![plot](milestone-10/screenshots/Prometheus-target.png)  
