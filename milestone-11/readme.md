@@ -49,4 +49,4 @@ kubectl apply -f prometheus.yml
 ![Slack alert notification](screenshots/slack-alert.png)
 
 6 - Email alert notification
-![Email alert notification](email-alert.png)
+![Email alert notification](screenshots/email-alert.png)
