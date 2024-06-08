@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: monitoring-ns
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+      slack_api_url: '<Your-Slack-Webhook-api-goes-here>'
+      smtp_smarthost: 'smtp.gmail.com:587'
+      smtp_from: 'sender.email@gmail.com'
+      smtp_auth_username: 'sender.email@gmail.com'
+      smtp_auth_password: '<Highly-secure-passwrod-goes-here>'
+      smtp_require_tls: true
+
+    route:
+      receiver: 'email-receiver'
+
+    receivers:
+    - name: 'email-receiver'
+      email_configs:
+      - to: 'receiver.email@gmail.com'
+        send_resolved: true
+      slack_configs:
+      - channel: '#devops'
+        send_resolved: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager-deployment
+  namespace: monitoring-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+    spec:
+      containers:
+        - name: alertmanager
+          image: prom/alertmanager
+          args:
+            - "--config.file=/etc/alertmanager/alertmanager.yml"
+          volumeMounts:
+            - name: alertmanager-config-volume
+              mountPath: /etc/alertmanager
+      volumes:
+        - name: alertmanager-config-volume
+          configMap:
+            name: alertmanager-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager-service
+  namespace: monitoring-ns
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9093
+      targetPort: 9093
+  selector:
+    app: alertmanager

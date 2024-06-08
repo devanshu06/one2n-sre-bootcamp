@@ -2,3 +2,4 @@ milestone-5/ubuntu-bionic-18.04-cloudimg-console.log
 */.env
 milestone-5/.vagrant
 milestone-7/k8s/cluster-keys.json
+milestone-11/kube-state-metrics

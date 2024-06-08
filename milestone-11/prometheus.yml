@@ -1,0 +1,311 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: monitoring-ns
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/proxy
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    verbs: ["get"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: monitoring-ns
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-pvc
+  namespace: monitoring-ns
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring-ns
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets: ['alertmanager-service.monitoring-ns.svc.cluster.local:9093']
+
+    rule_files:
+      - /etc/prometheus/alert.rules.yml
+
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+          - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+
+      - job_name: 'kubernetes-nodes-cadvisor'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics
+
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            target_label: __address__
+            regex: (.+):(?:\d+);(\d+)
+            replacement: ${1}:${2}
+
+      - job_name: 'kubernetes-services'
+        kubernetes_sd_configs:
+          - role: service
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+            action: replace
+            target_label: __scheme__
+            regex: (https?)
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+            action: replace
+            target_label: __address__
+            regex: (.+):(?:\d+);(\d+)
+            replacement: ${1}:${2}
+
+      - job_name: 'kube-state-metrics'
+        static_configs:
+          - targets: ['kube-state-metrics.kube-system.svc.cluster.local:8080']
+      
+      - job_name: 'blackbox'
+        metrics_path: /probe
+        params:
+          module: [http_2xx]  # Change this to your desired module
+        static_configs:
+        - targets:
+            - http://api-server-svc.student-api.svc.cluster.local:5000
+            - http://db.student-api.svc.cluster.local:3306
+            - http://grafana-service.svc.cluster.local:3306
+            - http://loki.svc.cluster.local:3306
+            - http://vault.vault-ns.svc.cluster.local:8200
+            - http://external-secrets-webhook.external-secrets-ns.svc.cluster.local:443
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: blackbox-exporter.monitoring-ns.svc.cluster.local:9115
+        scrape_interval: 30s
+        scrape_timeout: 10s
+
+
+  alert.rules.yml: |
+    groups:
+      - name: node_alerts
+        rules:
+          - alert: HighCPUUsage
+            expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High CPU Usage"
+              description: "CPU usage is above 80% (current value: {{ $value }}%)"
+
+          - alert: HighDiskUsage
+            expr: node_filesystem_avail_bytes / node_filesystem_size_bytes * 100 < 20
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High Disk Usage"
+              description: "Disk usage is above 80% (current value: {{ $value }}%)"
+        
+      - name: service_alerts
+        rules:
+          - alert: K8sPodRestart
+            expr: increase(kube_pod_container_status_restarts_total[1h]) > 0
+            for: 5m
+            labels:
+              severity: critical
+              group: infra
+            annotations:
+              summary: "{{ $labels.pod }} in {{ $labels.exported_namespace }} namespace has been restarted"
+              description: "Restart count for {{ $labels.pod }} \n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
+      - name: blackbox_alerts
+        rules:
+        - alert: BlackboxSlowProbe
+          expr: avg_over_time(probe_duration_seconds[1m]) > 10
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            description: |-
+              Blackbox probe took more than 10s to complete
+                VALUE = {{ $value }}
+                LABELS = {{ $labels }}
+            summary: Blackbox slow probe (instance {{ $labels.instance }})
+        - alert: BlackboxProbeHttpFailure
+          expr: probe_http_status_code >= 500
+          labels:
+            severity: critical
+          annotations:
+            description: |-
+              HTTP status code is 5xx
+                VALUE = {{ $value }}
+                LABELS = {{ $labels }}
+            summary: Blackbox probe HTTP failure (instance {{ $labels.instance }})
+        - alert: BlackboxProbeSlowHttp
+          expr: avg_over_time(probe_http_duration_seconds[1m]) > 10
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            description: |-
+              HTTP request took more than 10s
+                VALUE = {{ $value }}
+                LABELS = {{ $labels }}
+            summary: Blackbox probe slow HTTP (instance {{ $labels.instance }})
+        - alert: BlackboxProbeSlowPing
+          expr: avg_over_time(probe_icmp_duration_seconds[1m]) > 10
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            description: |-
+              Blackbox ping took more than 10s
+                VALUE = {{ $value }}
+                LABELS = {{ $labels }}
+            summary: Blackbox probe slow ping (instance {{ $labels.instance }})
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-deployment
+  namespace: monitoring-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      serviceAccountName: prometheus
+      containers:
+        - name: prometheus
+          image: prom/prometheus
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+          volumeMounts:
+            - name: prometheus-storage
+              mountPath: /prometheus
+            - name: prometheus-config-volume
+              mountPath: /etc/prometheus
+      volumes:
+        - name: prometheus-storage
+          persistentVolumeClaim:
+            claimName: prometheus-pvc
+        - name: prometheus-config-volume
+          configMap:
+            name: prometheus-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: monitoring-ns
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9090
+      targetPort: 9090
+  selector:
+    app: prometheus
