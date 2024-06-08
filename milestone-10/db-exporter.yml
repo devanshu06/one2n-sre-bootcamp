@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-exporter-config
+  namespace: monitoring-ns
+data:
+  MYSQL_USER: "root"
+  MYSQL_HOST: "db.student-api.svc.cluster.local"
+  MYSQL_PORT: "3306"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-exporter-secret
+  namespace: monitoring-ns
+type: Opaque
+data:
+  MYSQL_PASSWORD: "cGFzc3dvcmQ="
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-exporter
+  namespace: monitoring-ns
+  labels:
+    app: mysql-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-exporter
+  template:
+    metadata:
+      labels:
+        app: mysql-exporter
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9104"
+    spec:
+      tolerations:
+        - key: "type"
+          operator: "Equal"
+          value: "application"
+          effect: "PreferNoSchedule"
+      containers:
+        - name: mysql-exporter
+          image: prom/mysqld-exporter:master
+          ports:
+            - containerPort: 9104
+          env:
+            - name: DATA_SOURCE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-exporter-secret
+                  key: MYSQL_PASSWORD
+            - name: MYSQL_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-exporter-config
+                  key: MYSQL_USER
+            - name: MYSQL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-exporter-config
+                  key: MYSQL_HOST
+            - name: MYSQL_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-exporter-config
+                  key: MYSQL_PORT
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-exporter
+  namespace: monitoring-ns
+  labels:
+    app: mysql-exporter
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9104"
+spec:
+  ports:
+    - port: 9104
+      targetPort: 9104
+      protocol: TCP
+  selector:
+    app: mysql-exporter
+  type: ClusterIP
