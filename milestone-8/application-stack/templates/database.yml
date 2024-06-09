@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.database.statefulset.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  serviceName: {{ .Values.database.statefulset.name }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.database.statefulset.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.database.statefulset.name }}
+    spec:
+      containers:
+      - name: {{ .Values.database.statefulset.name }}
+        image: "{{ .Values.database.statefulset.image.name }}:{{ .Values.database.statefulset.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.database.statefulset.ports.containerPort }}
+          name: {{ .Values.database.statefulset.name }}
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: databse-creds
+              key: password
+        volumeMounts:
+        - name: {{ .Values.database.statefulset.volumeClaimTemplates.name | default "mysql-persistent-storage" }}
+          mountPath: /var/lib/mysql
+      tolerations:
+      - key: "type"
+        operator: "Equal"
+        value: "application"
+        effect: "NoSchedule"
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ .Values.database.statefulset.volumeClaimTemplates.name | default "mysql-persistent-storage" }}
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.database.statefulset.volumeClaimTemplates.storageSize | default "5Gi" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.database.svc.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  ports:
+  - port: {{ .Values.database.svc.ports.port }}
+    targetPort: {{ .Values.database.svc.ports.targetPort }}
+  clusterIP: None
+  selector:
+    app: {{ .Values.database.statefulset.name }}

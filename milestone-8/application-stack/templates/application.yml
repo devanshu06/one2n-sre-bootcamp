@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.application.cm.name }}
+  namespace: {{ .Values.namespace }}
+data:
+  DATABASE_HOST: db
+  DATABASE_NAME: studentdb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.application.dep.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.application.dep.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.application.dep.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.application.dep.name }}
+    spec:
+      containers:
+      - name: {{ .Values.application.dep.name }}
+        image: "{{ .Values.application.dep.image.name }}:{{ .Values.application.dep.image.tag }}"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: {{ .Values.application.dep.ports.containerPort }}
+        env:
+        - name: DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.application.cm.name }}
+              key: DATABASE_HOST
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: databse-creds
+              key: username
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: databse-creds
+              key: password
+        - name: DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.application.cm.name }}
+              key: DATABASE_NAME
+      tolerations:
+      - key: "type"
+        operator: "Equal"
+        value: "application"
+        effect: "NoSchedule"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.application.svc.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: {{ .Values.application.dep.name }}
+  ports:
+  - port: {{ .Values.application.svc.ports.port }}
+    targetPort: {{ .Values.application.svc.ports.targetPort }}
