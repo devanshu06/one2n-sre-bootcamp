@@ -50,10 +50,13 @@ jobs:
           yq e '.application.dep.image.tag = strenv(BUILD_TAG)' -i values.yaml
 
       - name: Commit and push updated values.yml
+        env:
+          PAT: ${{ secrets.PAT }}
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
           cd milestone-8/application-stack
           git add values.yaml
           git commit -m "Update application Docker image tag to ${{ env.BUILD_TAG }}"
+          git remote set-url origin https://${{ secrets.PAT }}@github.com/devanshu06/one2n-sre-bootcamp.git
           git push origin HEAD:$(git rev-parse --abbrev-ref HEAD)
