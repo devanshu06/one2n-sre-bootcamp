@@ -58,5 +58,5 @@ jobs:
           cd milestone-8/application-stack
           git add values.yaml
           git commit -m "Update application Docker image tag to ${{ env.BUILD_TAG }}"
-          git remote set-url origin https://${{ secrets.PAT }}@github.com/devanshu06/one2n-sre-bootcamp.git
+          git remote set-url origin https://${{ secrets.PAT }}@github.com/devanshu06/one2n-sre-bootcamp
           git push origin HEAD:$(git rev-parse --abbrev-ref HEAD)
