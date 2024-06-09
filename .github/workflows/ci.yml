@@ -47,7 +47,7 @@ jobs:
       - name: Update application image tag in values.yml
         run: |
           cd milestone-8/application-stack
-          sed -i 's|\(application:\n.*dep:\n.*replicas:.*\n.*image:\n.*name: dev06/one2n-sre-bootcamp\n.*tag: \).*|\1${{ env.BUILD_TAG }}|' values.yml
+          yq e '.application.dep.image.tag = strenv(BUILD_TAG)' -i values.yml
 
       - name: Commit and push updated values.yml
         run: |
