@@ -47,7 +47,7 @@ jobs:
       - name: Update application image tag in values.yml
         run: |
           cd milestone-8/application-stack
-          yq e '.application.dep.image.tag = strenv(BUILD_TAG)' -i values.yml
+          yq e '.application.dep.image.tag = strenv(BUILD_TAG)' -i values.yaml
 
       - name: Commit and push updated values.yml
         run: |
