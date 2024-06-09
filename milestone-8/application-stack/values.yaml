@@ -1,11 +1,10 @@
-namespace: student-api 
-
+namespace: student-api
 application:
   dep:
     replicas: 2
     image:
       name: dev06/one2n-sre-bootcamp
-      tag: rest-api
+      tag: "20240610000054"
     name: api-server-dep
     ports:
       containerPort: 5000
@@ -16,8 +15,6 @@ application:
       targetPort: 5000
   cm:
     name: api-server-config
-
-
 database:
   statefulset:
     image:
@@ -34,4 +31,3 @@ database:
     ports:
       port: 3306
       targetPort: 3306
-
