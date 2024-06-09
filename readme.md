@@ -5,4 +5,4 @@ Welcome to the One2N SRE Bootcamp repository! This repository contains solutions
 
 # Progress update:
 
-Milestone-7 is completed. I am currently working on the milestone-8. Will update the status here.
+Working on Milestone-8 it is partially completed (Only integration of setting up vault and ESO in a single helm is reamaining). Rest other milestones are completed successfully.

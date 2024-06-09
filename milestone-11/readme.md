@@ -31,7 +31,7 @@ kubectl apply -f node-exporter.yml
 kubectl apply -f prometheus.yml
 ```
 
-## Screenshots of Grafana and prometheus to show the working of the code
+## Screenshots of Grafana Dashboards and Alerts to show the working of the code
 
 1 - Dashboard for Blackbox 
 ![Dashboard for Blackbox ](screenshots/blackbox-exporter-dashboard.png)
