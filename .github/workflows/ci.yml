@@ -47,14 +47,14 @@ jobs:
       - name: Update application image tag in values.yml
         run: |
           cd milestone-8/application-stack
-          yq e '.application.dep.image.tag = strenv(BUILD_TAG)' -i values.yaml
+          yq eval '.application.dep.image.tag = strenv(BUILD_TAG)' -i values.yaml
 
       - name: Commit and push updated values.yml
         env:
           PAT: ${{ secrets.PAT }}
         run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
           cd milestone-8/application-stack
           git add values.yaml
           git commit -m "Update application Docker image tag to ${{ env.BUILD_TAG }}"
