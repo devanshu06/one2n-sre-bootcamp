@@ -11,6 +11,7 @@ else
 endif
 
 lint:
+	$(PIP) install flake8 --break-system-packages 
 	$(PYTHON) -m flake8 .
 
 up:
