@@ -36,6 +36,7 @@ DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, FLASK_HOST, FLAS
 
 app = Flask(__name__)
 
+
 def initialize_database():
     try:
         connection = mysql.connector.connect(
@@ -65,6 +66,7 @@ def initialize_database():
 
 
 connection_pool = initialize_database()
+
 
 def get_db_connection():
     try:
