@@ -1,5 +1,6 @@
 BASE_DIR := $(shell pwd)
 PROJECT_NAME := one2n-sre-bootcamp
+VENV_DIR := $(BASE_DIR)/venv
 
 ifeq ($(OS),Windows_NT)
     PIP := pip
@@ -9,10 +10,21 @@ else
     PYTHON := python3
 endif
 
-install:
-	$(PIP) install -r requirements.txt
+check_python:
+	@if which $(PYTHON) > /dev/null; then \
+        echo "$(PYTHON) is installed."; \
+    else \
+        echo "$(PYTHON) is not installed. Please install $(PYTHON) before proceeding."; \
+        exit 1; \
+    fi
+
+setup_venv: check_python
+	$(PYTHON) -m venv $(VENV_DIR)
+	@echo "Virtual environment setup at $(VENV_DIR)"
+
+install: setup_venv
+	$(VENV_DIR)/bin/$(PIP) install -r requirements.txt
 
 run:
-	$(PYTHON) main.py
-
+	$(VENV_DIR)/bin/$(PYTHON) main.py
 
