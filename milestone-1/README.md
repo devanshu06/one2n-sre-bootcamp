@@ -14,10 +14,18 @@ To Run this Code on you local you need below things:
 
 ### How to run code locally 
 
-To run the code in our localhost. We need the python, pip and mysql installed.
+To run the code in your localhost. You need python, pip and mysql installed.
 
 ```bash
-# This command will install the requirments 
+# This command will check if python is installed or not 
+make check_python
+```
+```bash
+# This command will setup the venn for python 
+make setup_venv
+```
+```bash
+# This command will install the requirments using the venv
 make install
 ```
 ```bash
@@ -27,7 +35,7 @@ make start
 
 ### APIs:
 
-I have created the Postman Collection you can find it in the **one2n.postman_collection.json**
+You can find out Postman Collection in the **one2n.postman_collection.json**
 
 * /healthcheck - To check the healh status - [GET] Request
 * /api/v1/addstudent - To add the student in the table - [POST] Request
