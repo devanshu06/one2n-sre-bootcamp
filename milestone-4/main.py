@@ -6,6 +6,7 @@ from mysql.connector import pooling, Error
 from dotenv import load_dotenv
 import db_queries
 
+
 def setup_environment_and_logging():
     load_dotenv()
     logging.basicConfig(level=logging.INFO)
@@ -29,7 +30,9 @@ def setup_environment_and_logging():
 
     return DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, FLASK_HOST, FLASK_PORT, DEBUG_MODE
 
+
 DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, FLASK_HOST, FLASK_PORT, DEBUG_MODE = setup_environment_and_logging()
+
 
 app = Flask(__name__)
 
@@ -58,10 +61,8 @@ def initialize_database():
         "database": DATABASE_NAME,
     }
 
-    return pooling.MySQLConnectionPool(pool_name="mypool",
-                                       pool_size=10,
-                                       pool_reset_session=True,
-                                       **dbconfig)
+    return pooling.MySQLConnectionPool(pool_name="mypool", pool_size=10, pool_reset_session=True, **dbconfig)
+
 
 connection_pool = initialize_database()
 
