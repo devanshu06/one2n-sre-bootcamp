@@ -14,22 +14,14 @@ To Run this Code on you local you need below things:
 
 ### How to build the docker image
 
-To build the docker images you should be inside the milestone-2 directory and run the below command. I have used my personal docker hub repository to push the docker image
-
-```bash
-# To build the images with docker command
-docker build -t  dev06/one2n-sre-bootcamp:rest-api .
-
-# To remove the images with docker command
-docker rmi dev06/one2n-sre-bootcamp:rest-api
-
-# To push the images with docker command
-docker push dev06/one2n-sre-bootcamp:rest-api
-```
+To build the docker images you should be inside the milestone-2 directory and run the below command. You can use your personal docker hub repository to push the docker image
 
 ```bash
 # To Build image with the make target
 make build_image
+
+# To Build image with a Custom NAME and TAG
+make build_image IMAGE_NAME=dev06/custom-name TAG=1.1.0
 
 # To Remove image with the make target
 make clean_image
