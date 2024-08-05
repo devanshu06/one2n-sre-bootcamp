@@ -1,17 +1,26 @@
-#Stage-1: Builder Stage
+# Stage-1: Builder Stage
 FROM python:3.9-alpine as builder
 WORKDIR /app
 
 COPY requirements.txt .
 
-RUN python -m venv /app/venv
-RUN /app/venv/bin/pip install --no-cache-dir -r requirements.txt
+# RUN python -m venv /app/venv
+# RUN /app/venv/bin/pip install --no-cache-dir -r requirements.txt
 
-#Stage-2: Final Stage
+RUN python -m venv /app/venv && \
+    /app/venv/bin/pip install --no-cache-dir wheel
+
+RUN /app/venv/bin/pip wheel --no-cache-dir -r requirements.txt -w /app/wheels
+
+# Stage-2: Final Stage
 FROM python:3.9-alpine
 WORKDIR /app
 
 COPY --from=builder /app/venv /app/venv
+
+COPY --from=builder /app/wheels /app/wheels
+RUN /app/venv/bin/pip install --no-cache-dir --no-index --find-links=/app/wheels /app/wheels/*
+
 COPY . .
 
 ENV DATABASE_HOST=db

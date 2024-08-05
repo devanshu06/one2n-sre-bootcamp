@@ -6,17 +6,16 @@ from mysql.connector import pooling, Error
 from dotenv import load_dotenv
 import db_queries
 
-
 def setup_environment_and_logging():
     load_dotenv()
     logging.basicConfig(level=logging.INFO)
-    DATABASE_HOST = os.getenv("DATABASE_HOST")
-    DATABASE_USER = os.getenv("DATABASE_USER")
-    DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
-    DATABASE_NAME = os.getenv("DATABASE_NAME")
-    FLASK_HOST = os.getenv("FLASK_HOST", "0.0.0.0")
-    FLASK_PORT = int(os.getenv("FLASK_PORT", 5000))
-    DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() == 'true'
+    DATABASE_HOST = os.environ["DATABASE_HOST"]
+    DATABASE_USER = os.environ["DATABASE_USER"]
+    DATABASE_PASSWORD = os.environ["DATABASE_PASSWORD"]
+    DATABASE_NAME = os.environ["DATABASE_NAME"]
+    FLASK_HOST = os.environ.get("FLASK_HOST", "0.0.0.0")
+    FLASK_PORT = int(os.environ.get("FLASK_PORT", 5000))
+    DEBUG_MODE = os.environ.get("DEBUG_MODE", "False").lower() == 'true'
 
     logging.info(f"DB Host: {DATABASE_HOST}")
     logging.info(f"DB User: {DATABASE_USER}")
@@ -30,11 +29,9 @@ def setup_environment_and_logging():
 
     return DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, FLASK_HOST, FLASK_PORT, DEBUG_MODE
 
-
 DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, FLASK_HOST, FLASK_PORT, DEBUG_MODE = setup_environment_and_logging()
 
 app = Flask(__name__)
-
 
 def initialize_database():
     try:
@@ -54,21 +51,19 @@ def initialize_database():
         cursor.close()
         connection.close()
 
+    dbconfig = {
+        "host": DATABASE_HOST,
+        "user": DATABASE_USER,
+        "password": DATABASE_PASSWORD,
+        "database": DATABASE_NAME,
+    }
 
-initialize_database()
+    return pooling.MySQLConnectionPool(pool_name="mypool",
+                                       pool_size=10,
+                                       pool_reset_session=True,
+                                       **dbconfig)
 
-dbconfig = {
-    "host": DATABASE_HOST,
-    "user": DATABASE_USER,
-    "password": DATABASE_PASSWORD,
-    "database": DATABASE_NAME,
-}
-
-connection_pool = pooling.MySQLConnectionPool(pool_name="mypool",
-                                              pool_size=10,
-                                              pool_reset_session=True,
-                                              **dbconfig)
-
+connection_pool = initialize_database()
 
 def get_db_connection():
     try:
