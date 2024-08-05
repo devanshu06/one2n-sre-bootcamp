@@ -2,29 +2,38 @@ import os
 import logging
 from flask import Flask, request
 import mysql.connector
-from mysql.connector import Error
+from mysql.connector import pooling, Error
 from dotenv import load_dotenv
 import db_queries
 
-load_dotenv()
+def setup_environment_and_logging():
+    load_dotenv()
+    logging.basicConfig(level=logging.INFO)
+    DATABASE_HOST = os.environ["DATABASE_HOST"]
+    DATABASE_USER = os.environ["DATABASE_USER"]
+    DATABASE_PASSWORD = os.environ["DATABASE_PASSWORD"]
+    DATABASE_NAME = os.environ["DATABASE_NAME"]
+    FLASK_HOST = os.environ.get("FLASK_HOST", "0.0.0.0")
+    FLASK_PORT = int(os.environ.get("FLASK_PORT", 5000))
+    DEBUG_MODE = os.environ.get("DEBUG_MODE", "False").lower() == 'true'
+
+    logging.info(f"DB Host: {DATABASE_HOST}")
+    logging.info(f"DB User: {DATABASE_USER}")
+    # logging.info(f"DB Password: {DATABASE_PASSWORD}")
+    logging.info(f"DB Name: {DATABASE_NAME}")
+
+    if DEBUG_MODE:
+        logging.getLogger().setLevel(logging.DEBUG)
+    else:
+        logging.getLogger().setLevel(logging.INFO)
+
+    return DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, FLASK_HOST, FLASK_PORT, DEBUG_MODE
+
+DATABASE_HOST, DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, FLASK_HOST, FLASK_PORT, DEBUG_MODE = setup_environment_and_logging()
 
 app = Flask(__name__)
-DATABASE_HOST = os.getenv("DATABASE_HOST")
-DATABASE_USER = os.getenv("DATABASE_USER")
-DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
-DATABASE_NAME = os.getenv("DATABASE_NAME")
-
-logging.basicConfig(level=logging.INFO)
-
-logging.info(f"DB Host: {DATABASE_HOST}")
-logging.info(f"DB User: {DATABASE_USER}")
-# logging.info(f"DB Password: {DATABASE_PASSWORD}")
-logging.info(f"DB Name: {DATABASE_NAME}")
-
 
 def initialize_database():
-    connection = None
-    cursor = None
     try:
         connection = mysql.connector.connect(
             host=DATABASE_HOST,
@@ -39,21 +48,26 @@ def initialize_database():
     except Error as e:
         logging.error(f"Error initializing database: {str(e)}")
     finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
+        cursor.close()
+        connection.close()
 
+    dbconfig = {
+        "host": DATABASE_HOST,
+        "user": DATABASE_USER,
+        "password": DATABASE_PASSWORD,
+        "database": DATABASE_NAME,
+    }
+
+    return pooling.MySQLConnectionPool(pool_name="mypool",
+                                       pool_size=10,
+                                       pool_reset_session=True,
+                                       **dbconfig)
+
+connection_pool = initialize_database()
 
 def get_db_connection():
     try:
-        initialize_database()
-        connection = mysql.connector.connect(
-            host=DATABASE_HOST,
-            user=DATABASE_USER,
-            passwd=DATABASE_PASSWORD,
-            database=DATABASE_NAME
-        )
+        connection = connection_pool.get_connection()
         return connection
     except Error as e:
         logging.error(f"Error connecting to database: {str(e)}")
@@ -70,11 +84,11 @@ def addstudent():
     connection = get_db_connection()
     if not connection:
         return {"error": "Database connection failed"}, 500
+    data = request.get_json()
+    if "name" not in data:
+        return {"error": "name field is required"}, 400
+    name = data["name"]
     try:
-        data = request.get_json()
-        if "name" not in data:
-            return {"error": "name field is required"}, 400
-        name = data["name"]
         cursor = connection.cursor()
         cursor.execute(db_queries.INSERT_STUDENT, (name,))
         connection.commit()
@@ -84,11 +98,6 @@ def addstudent():
     except Exception as e:
         logging.error(f"Error occurred: {str(e)}")
         return {"error": str(e)}, 500
-    finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
 
 
 @app.delete('/api/v1/deletestudent/<int:num>')
@@ -108,11 +117,6 @@ def deletestudent(num):
     except Exception as e:
         logging.error(f"Error occurred: {str(e)}")
         return {"error": str(e)}, 500
-    finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
 
 
 @app.get('/api/v1/allstudent')
@@ -129,11 +133,6 @@ def allstudent():
     except Exception as e:
         logging.error(f"Error occurred: {str(e)}")
         return {"error": str(e)}, 500
-    finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
 
 
 @app.get('/api/v1/student/<int:num>')
@@ -151,11 +150,6 @@ def studentbyid(num):
     except Exception as e:
         logging.error(f"Error occurred: {str(e)}")
         return {"error": str(e)}, 500
-    finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
 
 
 @app.put('/api/v1/updatestudent/<int:num>')
@@ -163,11 +157,11 @@ def updatestudentbyid(num):
     connection = get_db_connection()
     if not connection:
         return {"error": "Database connection failed"}, 500
+    data = request.get_json()
+    if "name" not in data:
+        return {"error": "Name field is required"}, 400
+    new_name = data["name"]
     try:
-        data = request.get_json()
-        if "name" not in data:
-            return {"error": "Name field is required"}, 400
-        new_name = data["name"]
         cursor = connection.cursor()
         cursor.execute(db_queries.STUDENT_BY_ID, (num,))
         student = cursor.fetchone()
@@ -182,12 +176,7 @@ def updatestudentbyid(num):
     except Exception as e:
         logging.error(f"Error occurred: {str(e)}")
         return {"error": str(e)}, 500
-    finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port="5000", debug=True)
+    app.run(host=FLASK_HOST, port=FLASK_PORT, debug=DEBUG_MODE)
