@@ -13,7 +13,7 @@ WORKDIR /app
 
 COPY --from=builder /app/venv /app/venv
 COPY . .
-
+RUN chmod +x run.sh
 ENV DATABASE_HOST=db
 ENV DATABASE_USER=root
 ENV DATABASE_PASSWORD=password
@@ -22,4 +22,4 @@ ENV PATH="/app/venv/bin:$PATH"
 
 EXPOSE 5000
 
-ENTRYPOINT [ "python", "main.py" ]
+ENTRYPOINT [ "./run.sh" ]
