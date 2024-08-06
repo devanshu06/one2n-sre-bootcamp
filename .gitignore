@@ -4,4 +4,7 @@ venv
 milestone-5/.vagrant
 milestone-7/k8s/cluster-keys.json
 milestone-11/kube-state-metrics
-milestone-1/__pycache__/db_queries.cpython-312.pyc
+*/__pycache__
+*/*/__pycache__
+*/*/*/__pycache__
+
