@@ -11,6 +11,7 @@ You should Have self-hosted runner configured on you github repository and below
 * python 3.6 or above
 * make
 * configure secrets on github repos with **DOCKER_USERNAME** & **DOCKER_PASSWORD**
+* configure the PAT for Pushing back the changes to the repository
 
 ### Where to find the CI file
 
