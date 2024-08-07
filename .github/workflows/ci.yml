@@ -71,5 +71,11 @@ jobs:
           cd milestone-8/application-stack
           git add values.yaml
           git commit -m "Update application Docker image tag to ${{ env.BUILD_TAG }}"
+          
+          # Capture the current branch name
+          CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
+          echo "Current branch: $CURRENT_BRANCH"
+          
+          # Push the changes to the current branch
           git remote set-url origin https://${{ secrets.PAT }}@github.com/devanshu06/one2n-sre-bootcamp
-          git push origin HEAD:$(git rev-parse --abbrev-ref HEAD)
+          git push origin HEAD:$CURRENT_BRANCH
