@@ -23,7 +23,24 @@ make up
 # To stop the docker containers 
 make down
 
+# To start the Migration on your local machine: 
+# Before running this make action Please keep in mind your database is up on your local and virtual Enviornment is being setup 
+make run_db_migration
+
 ```
+
+#### Note: 
+
+If you want to change the Configuration of Database and the Database Schema Migration Please check the `docker-compose.yml` file.  
+Description of Environment Variables in the docker-compose.yml file.  
+*  Explanation of ENV varibale in the `api` service:  
+    *  `DATABASE_HOST` #Provide the Database HostName/URL. Default is db (service name of db container)
+    *  `DATABASE_USER` #Provide the Databse Username. Default is root
+    *  `DATABASE_PASSWORD` #Provide the Database Password. Default is password
+    *  `DATABASE_NAME` #Provide the Database Name. Default is studentdb
+    *  `RUN_MIGRATION` # Provide the Boolean values for this TRUE/FALSE if you want to run the DB Schema Migration  
+*  Explanation of ENV variable in the `db` service:  
+    *  `MYSQL_ROOT_PASSWORD` #To setup the root password for the Database container. Default is password
 
 
 
