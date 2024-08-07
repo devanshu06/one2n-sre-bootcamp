@@ -23,7 +23,7 @@ vagrant_destroy:
 	vagrant destroy
 
 start_vagrant:
-	docker-compose -f /vagrant/docker-compose-vagrant.yml up -d 
+	docker-compose -f /vagrant/docker-compose.yml up -d nginx api-1 api-2 db-vagrant
 
 up:
 	docker-compose -f docker-compose.yml up --build -d 
@@ -40,8 +40,20 @@ clean_image:
 push_image: 
 	docker push $(IMAGE_NAME):$(TAG)
 
-install:
-	$(PIP) install -r requirements.txt
+check_python:
+	@if which $(PYTHON) > /dev/null; then \
+        echo "$(PYTHON) is installed."; \
+    else \
+        echo "$(PYTHON) is not installed. Please install $(PYTHON) before proceeding."; \
+        exit 1; \
+    fi
+
+setup_venv: check_python
+	$(PYTHON) -m venv $(VENV_DIR)
+	@echo "Virtual environment setup at $(VENV_DIR)"
+
+install: setup_venv
+	$(VENV_DIR)/bin/$(PIP) install -r requirements.txt
 
 run:
-	$(PYTHON) main.py
+	$(VENV_DIR)/bin/$(PYTHON) main.py
