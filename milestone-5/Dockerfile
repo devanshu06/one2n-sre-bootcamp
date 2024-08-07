@@ -14,10 +14,6 @@ WORKDIR /app
 COPY --from=builder /app/venv /app/venv
 COPY . .
 
-ENV DATABASE_HOST=db
-ENV DATABASE_USER=root
-ENV DATABASE_PASSWORD=password
-ENV DATABASE_NAME=studentdb
 ENV PATH="/app/venv/bin:$PATH"
 
 EXPOSE 5000
