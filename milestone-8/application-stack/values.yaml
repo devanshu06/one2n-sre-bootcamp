@@ -4,7 +4,7 @@ application:
     replicas: 2
     image:
       name: dev06/one2n-sre-bootcamp
-      tag: "2024-08-06-16-07"
+      tag: "latest"
     name: api-server-dep
     ports:
       containerPort: 5000
