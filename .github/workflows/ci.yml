@@ -20,10 +20,8 @@ jobs:
       - name: Lint code
         run: |
           cd milestone-4
-          make install
           make lint
-          deactivate
-          
+
       - name: Set build tag
         id: vars
         run: |
