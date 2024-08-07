@@ -17,14 +17,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git-semver
-
-      - name: Generate semantic version
+      - name: Set build tag
         id: vars
-        run: echo "VERSION=$(git semver next patch)" >> $GITHUB_ENV
+        run: |
+          # Extract the latest tag
+          LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "Latest tag: $LATEST_TAG"
+          
+          # Split the version number into its components
+          IFS='.' read -r -a VERSION_PARTS <<< "${LATEST_TAG:-0.0.0}"
+          MAJOR="${VERSION_PARTS[0]}"
+          MINOR="${VERSION_PARTS[1]}"
+          PATCH="${VERSION_PARTS[2]}"
+
+          # Increment the patch version
+          PATCH=$((PATCH + 1))
+          NEW_TAG="$MAJOR.$MINOR.$PATCH"
+          
+          echo "New tag: $NEW_TAG"
+          
+          # Set the new tag in the environment
+          echo "BUILD_TAG=$NEW_TAG" >> $GITHUB_ENV
 
       - name: Lint code
         run: |
@@ -37,12 +50,12 @@ jobs:
       - name: Build Docker image
         run: |
           cd milestone-4
-          docker build -t dev06/one2n-sre-bootcamp:${{ env.VERSION }} .
+          docker build -t dev06/one2n-sre-bootcamp:${{ env.BUILD_TAG }} .
 
       - name: Push Docker image
         run: |
           cd milestone-4
-          docker push dev06/one2n-sre-bootcamp:${{ env.VERSION }}
+          docker push dev06/one2n-sre-bootcamp:${{ env.BUILD_TAG }}
 
       - name: Update application image tag in values.yml
         run: |
