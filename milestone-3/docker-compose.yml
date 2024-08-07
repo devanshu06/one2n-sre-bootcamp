@@ -6,6 +6,12 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: always
+    environment:
+      DATABASE_HOST: db
+      DATABASE_USER: root
+      DATABASE_PASSWORD: password
+      DATABASE_NAME: studentdb
+      RUN_MIGRATION: true
     ports:
       - "5000:5000"
     depends_on:
