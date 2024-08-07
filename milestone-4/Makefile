@@ -46,4 +46,5 @@ run:
 	$(VENV_DIR)/bin/$(PYTHON) main.py
 
 lint:
-	$(PYTHON) -m flake8 --break-system-packages 
+	$(PIP) install flake8 --break-system-packages
+	$(PYTHON) -m flake8 .
